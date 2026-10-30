@@ -21,14 +21,23 @@ function makeRooms() {
         { id: "projector", name: "Projector", watts: 300, on: true },
       ],
     },
-    "study-12": {
-      name: "Study Room 12",
+    "studyroom-najd library": {
+      name: "Study Room",
       devices: [
         { id: "lights", name: "Ceiling lights", watts: 120, on: true },
         { id: "ac", name: "Air conditioner", watts: 900, on: true },
         { id: "screen", name: "Wall screen", watts: 150, on: true },
       ],
     },
+    "hf-lab": {
+      name: "Human Factors Lab",
+      devices: [
+        {id: "lights", name: "Ceiling lights", watts: 180, on: true},
+        {id: "ac", name: "Air conditioner", watts: 900, on: true},
+        {id: "screen", name: "Wall screen", watts: 150, on: true},
+        {id: "pc", name: "Computers", watts: 600, on: true},
+      ]
+    }
   };
 }
 let rooms = makeRooms();
