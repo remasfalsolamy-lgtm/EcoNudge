@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Econudge</title>
+<style>
+  :root {
+    --bg: #eef3f1; --ink: #14231f; --muted: #5b6e68; --line: #d3dedb;
+    --waste: #c77d00; --good: #0f5c45; --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+  }
+  main { max-width: 480px; margin: 0 auto; padding: 28px 20px 40px; }
+  h1 { font-size: 1rem; font-weight: 600; margin: 0 0 24px; color: var(--muted); }
+  .room { font-size: 1.1rem; margin: 0; }
+  .watts { font-size: 4.2rem; font-weight: 700; line-height: 1.1; margin: 4px 0; color: var(--waste); }
+  .watts.off { color: var(--good); }
+  .sub { margin: 0 0 28px; color: var(--muted); }
+  ul { list-style: none; margin: 0 0 28px; padding: 0; background: var(--card); border-radius: 12px; }
+  li { display: flex; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  li:last-child { border-bottom: 0; }
+  li.off { color: var(--muted); }
+  button.main {
+    width: 100%; padding: 18px; font-size: 1.1rem; font-weight: 600; color: #fff;
+    background: var(--good); border: 0; border-radius: 12px; cursor: pointer;
+  }
+  button.main:disabled { background: #9db5ad; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--waste); outline-offset: 2px; }
+  .msg { margin-top: 16px; text-align: center; }
+  .reset { background: none; border: 0; color: var(--muted); text-decoration: underline; margin-top: 32px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Econudge</h1>
+  <p class="room" id="room">Loading…</p>
+  <p class="watts" id="watts"></p>
+  <p class="sub" id="sub"></p>
+  <ul id="devices"></ul>
+  <button class="main" id="shutdown" disabled>Switch everything off</button>
+  <p class="msg" id="msg"></p>
+  <button class="reset" id="reset">Reset demo</button>
+</main>
+
+<script>
+  // The room id is the last part of the address: /room/lab-204 -> "lab-204"
+  const roomId = location.pathname.split("/").pop();
+  const $ = (id) => document.getElementById(id);
+
+  function render(room) {
+    const running = room.devices.filter((d) => d.on);
+    const total = running.reduce((sum, d) => sum + d.watts, 0);
+
+    $("room").textContent = room.name;
+    $("watts").textContent = total + " W";
+    $("watts").className = "watts" + (total === 0 ? " off" : "");
+    $("sub").textContent = total === 0
+      ? "Everything is off. Thank you for saving power."
+      : "is running right now. Switch it off before you leave.";
+
+    $("devices").innerHTML = room.devices.map((d) =>
+      `<li class="${d.on ? "" : "off"}"><span>${d.name}</span><span>${d.on ? d.watts + " W" : "Off"}</span></li>`
+    ).join("");
+
+    $("shutdown").disabled = total === 0;
+  }
+
+  async function load() {
+    try {
+      const res = await fetch("/api/rooms/" + roomId);
+      if (!res.ok) throw new Error("This room isn’t set up yet. Check the QR code.");
+      render(await res.json());
+    } catch (err) {
+      $("room").textContent = err.message;
+    }
+  }
+
+  $("shutdown").addEventListener("click", async () => {
+    if (!confirm("Switch off everything in this room?")) return;
+    const res = await fetch("/api/rooms/" + roomId + "/shutdown", { method: "POST" });
+    render(await res.json());
+    $("msg").textContent = "Done. Everything in this room is off.";
+  });
+
+  $("reset").addEventListener("click", async () => {
+    await fetch("/api/reset", { method: "POST" });
+    $("msg").textContent = "";
+    load();
+  });
+
+  load();
+</script>
+</body>
+</html>
