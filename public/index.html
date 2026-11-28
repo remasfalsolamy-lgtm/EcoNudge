@@ -3,96 +3,173 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Econudge</title>
+<title>EcoNudge</title>
 <style>
-  :root {
-    --bg: #eef3f1; --ink: #14231f; --muted: #5b6e68; --line: #d3dedb;
-    --waste: #c77d00; --good: #0f5c45; --card: #ffffff;
-  }
+  :root { --bg:#eef3f1; --ink:#14231f; --muted:#5b6e68; --line:#d3dedb; --waste:#c77d00; --good:#0f5c45; --card:#fff; --warnbg:#fff3d6; }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Avenir Next", "Segoe UI", Roboto, sans-serif; line-height: 1.5;
-  }
-  main { max-width: 480px; margin: 0 auto; padding: 28px 20px 40px; }
-  h1 { font-size: 1rem; font-weight: 600; margin: 0 0 24px; color: var(--muted); }
-  .room { font-size: 1.1rem; margin: 0; }
-  .watts { font-size: 4.2rem; font-weight: 700; line-height: 1.1; margin: 4px 0; color: var(--waste); }
-  .watts.off { color: var(--good); }
-  .sub { margin: 0 0 28px; color: var(--muted); }
-  ul { list-style: none; margin: 0 0 28px; padding: 0; background: var(--card); border-radius: 12px; }
-  li { display: flex; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); }
-  li:last-child { border-bottom: 0; }
-  li.off { color: var(--muted); }
-  button.main {
-    width: 100%; padding: 18px; font-size: 1.1rem; font-weight: 600; color: #fff;
-    background: var(--good); border: 0; border-radius: 12px; cursor: pointer;
-  }
-  button.main:disabled { background: #9db5ad; cursor: default; }
-  button:focus-visible { outline: 3px solid var(--waste); outline-offset: 2px; }
-  .msg { margin-top: 16px; text-align: center; }
-  .reset { background: none; border: 0; color: var(--muted); text-decoration: underline; margin-top: 32px; cursor: pointer; }
+  [hidden] { display: none !important; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Avenir Next","Segoe UI",Roboto,sans-serif; line-height:1.5; }
+  main { max-width:480px; margin:0 auto; padding:24px 20px 40px; }
+  header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  h1 { font-size:1rem; font-weight:700; margin:0; color:var(--good); }
+  .roles { display:flex; gap:4px; background:var(--line); padding:3px; border-radius:99px; }
+  .roles button { border:0; background:none; padding:6px 12px; border-radius:99px; font:inherit; font-size:.85rem; color:var(--muted); cursor:pointer; }
+  .roles button[aria-pressed="true"] { background:var(--card); color:var(--ink); font-weight:600; }
+  .room { font-size:1.1rem; margin:0; }
+  .watts { font-size:4.2rem; font-weight:700; line-height:1.1; margin:4px 0; color:var(--waste); }
+  .watts.off { color:var(--good); }
+  .sub { margin:0 0 20px; color:var(--muted); }
+  .status { background:var(--card); border-left:4px solid var(--good); border-radius:8px; padding:12px 14px; margin-bottom:20px; }
+  .status.warn { background:var(--warnbg); border-color:var(--waste); }
+  .status p { margin:0; }
+  .track { height:6px; background:var(--line); border-radius:3px; margin:10px 0 0; overflow:hidden; }
+  .track i { display:block; height:100%; background:var(--waste); transition:width 1s linear; }
+  .link { background:none; border:0; padding:8px 0 0; font:inherit; color:var(--ink); text-decoration:underline; cursor:pointer; }
+  .impact { margin:0 0 20px; }
+  .impact p { margin:0 0 6px; color:var(--muted); font-size:.9rem; }
+  .impact div { display:flex; gap:10px; }
+  .impact b { display:block; font-size:1.5rem; line-height:1.2; }
+  .impact span { flex:1; background:var(--card); border-radius:10px; padding:10px 12px; font-size:.8rem; color:var(--muted); }
+  ul { list-style:none; margin:0 0 24px; padding:0; background:var(--card); border-radius:12px; }
+  li { display:flex; justify-content:space-between; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); }
+  li:last-child { border-bottom:0; }
+  li.off { color:var(--muted); }
+  li small { display:block; color:var(--muted); font-size:.75rem; }
+  button.main { width:100%; padding:18px; font-size:1.1rem; font-weight:600; color:#fff; background:var(--good); border:0; border-radius:12px; cursor:pointer; }
+  button.main:disabled { background:#9db5ad; cursor:default; }
+  button:focus-visible { outline:3px solid var(--waste); outline-offset:2px; }
+  .demo { margin-top:36px; padding-top:16px; border-top:2px dashed var(--line); font-size:.9rem; }
+  .demo h2 { font-size:.95rem; margin:0 0 4px; }
+  .demo .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+  .demo button { padding:8px 12px; border:1px solid var(--line); background:var(--card); border-radius:8px; font:inherit; cursor:pointer; }
+  .demo ol { padding-left:18px; color:var(--muted); margin:8px 0 0; }
+  @media (prefers-reduced-motion: reduce) { .track i { transition:none; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Econudge</h1>
+  <header>
+    <h1>EcoNudge</h1>
+    <div class="roles" role="group" aria-label="Sign-in role (simulated)">
+      <button data-role="student" aria-pressed="true">Student</button>
+      <button data-role="staff" aria-pressed="false">Lab staff</button>
+    </div>
+  </header>
+
   <p class="room" id="room">Loading…</p>
   <p class="watts" id="watts"></p>
   <p class="sub" id="sub"></p>
+
+  <div class="status" id="box" hidden>
+    <p id="status"></p>
+    <div class="track" id="track" hidden><i id="bar"></i></div>
+    <button class="link" id="cancel" hidden>Cancel shutdown</button>
+  </div>
+
+  <div class="impact">
+    <p id="impactTitle"></p>
+    <div>
+      <span><b id="kwh"></b>kWh wasted</span>
+      <span><b id="sar"></b>SAR</span>
+      <span><b id="lap"></b>laptop-hours</span>
+    </div>
+  </div>
+
   <ul id="devices"></ul>
-  <button class="main" id="shutdown" disabled>Switch everything off</button>
-  <p class="msg" id="msg"></p>
-  <button class="reset" id="reset">Reset demo</button>
+  <button class="main" id="shutdown" disabled>Switch off</button>
+
+  <section class="demo" id="demo" hidden>
+    <h2>Demo simulator</h2>
+    <div class="row">
+      <span>People in room: <b id="people">0</b></span>
+      <button id="enter">Person enters</button>
+      <button id="leave">Person leaves</button>
+    </div>
+    <div class="row">
+      <button id="fast">Fast demo (10 s, 1 min)</button>
+      <button id="normal">Normal (30 s, 20 min)</button>
+      <button id="reset">Reset demo</button>
+    </div>
+    <ol id="log"></ol>
+  </section>
 </main>
 
 <script>
   // The room id is the last part of the address: /room/lab-204 -> "lab-204"
-  const roomId = location.pathname.split("/").pop();
+  const roomId = decodeURIComponent(location.pathname.split("/").pop());
   const $ = (id) => document.getElementById(id);
+  let role = "student", s = null;
 
-  function render(room) {
-    const running = room.devices.filter((d) => d.on);
-    const total = running.reduce((sum, d) => sum + d.watts, 0);
+  // Talk to the server. With no body it reads (GET); with a body it sends (POST).
+  const api = (path, body) =>
+    fetch("/api/" + path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("This room isn’t set up yet. Check the QR code."))));
+  const mmss = (n) => Math.floor(n / 60) + ":" + String(n % 60).padStart(2, "0");
+  const people = (n) => n + (n === 1 ? " person" : " people");
 
-    $("room").textContent = room.name;
-    $("watts").textContent = total + " W";
-    $("watts").className = "watts" + (total === 0 ? " off" : "");
-    $("sub").textContent = total === 0
-      ? "Everything is off. Thank you for saving power."
-      : "is running right now. Switch it off before you leave.";
+  function render(x) {
+    s = x;
+    const mine = (d) => d.on && !d.critical && (role === "staff" || d.tier === "student");
+    const todo = x.devices.filter(mine).length;
 
-    $("devices").innerHTML = room.devices.map((d) =>
-      `<li class="${d.on ? "" : "off"}"><span>${d.name}</span><span>${d.on ? d.watts + " W" : "Off"}</span></li>`
-    ).join("");
+    $("room").textContent = x.name;
+    $("watts").textContent = x.watts + " W";
+    $("watts").className = "watts" + (x.watts === 0 ? " off" : "");
+    $("sub").textContent = x.watts === 0 ? "Everything that can be switched off is off. Thank you." : "can be switched off right now.";
 
-    $("shutdown").disabled = total === 0;
+    let msg = "";
+    if (x.countdown !== null) msg = people(x.people) + " detected. Switching off in " + x.countdown + " s unless someone cancels.";
+    else if (x.people > 0) msg = people(x.people) + " detected in this room.";
+    else if (x.autoOffIn !== null) msg = "This room is empty. It switches off by itself in " + mmss(x.autoOffIn) + ".";
+    $("box").hidden = !msg;
+    $("box").className = "status" + (x.countdown !== null ? " warn" : "");
+    $("status").textContent = msg;
+    $("track").hidden = $("cancel").hidden = x.countdown === null;
+    if (x.countdown !== null) $("bar").style.width = (x.countdown / x.settings.countdownSec) * 100 + "%";
+
+    const kwh = (x.watts * x.settings.overnightHours) / 1000;
+    $("impactTitle").textContent = "If this room stays on tonight (" + x.settings.overnightHours + " h)";
+    $("kwh").textContent = kwh.toFixed(1);
+    $("sar").textContent = (kwh * x.settings.sarPerKwh).toFixed(2);
+    $("lap").textContent = Math.round((x.watts * x.settings.overnightHours) / x.settings.laptopWatts);
+
+    $("devices").innerHTML = x.devices.map((d) => {
+      const tag = d.critical ? "Always on for safety" : d.on && !mine(d) ? "Lab staff only" : "";
+      return `<li class="${d.on ? "" : "off"}"><span>${d.name}${tag ? "<small>" + tag + "</small>" : ""}</span><span>${d.on ? d.watts + " W" : "Off"}</span></li>`;
+    }).join("");
+
+    $("shutdown").disabled = todo === 0 || x.countdown !== null;
+    $("shutdown").textContent = todo === 0 ? "Nothing for you to switch off" : "Switch off " + todo + (todo === 1 ? " device" : " devices");
+
+    $("people").textContent = x.people;
+    $("log").innerHTML = x.log.map((l) => `<li style="display:list-item;padding:0;border:0">${new Date(l.t).toLocaleTimeString()} ${l.text}</li>`).join("");
   }
 
   async function load() {
-    try {
-      const res = await fetch("/api/rooms/" + roomId);
-      if (!res.ok) throw new Error("This room isn’t set up yet. Check the QR code.");
-      render(await res.json());
-    } catch (err) {
-      $("room").textContent = err.message;
-    }
+    try { render(await api("rooms/" + roomId)); }
+    catch (err) { $("room").textContent = err.message; }
+  }
+  const act = (path, body) => api(path, body).then(load);
+
+  document.querySelectorAll("[data-role]").forEach((b) => b.addEventListener("click", () => {
+    role = b.dataset.role;
+    document.querySelectorAll("[data-role]").forEach((o) => o.setAttribute("aria-pressed", o === b));
+    if (s) render(s);
+  }));
+  $("shutdown").addEventListener("click", () => act("rooms/" + roomId + "/shutdown", { role }));
+  $("cancel").addEventListener("click", () => act("rooms/" + roomId + "/cancel", {}));
+
+  if (new URLSearchParams(location.search).has("demo")) {
+    $("demo").hidden = false;
+    $("enter").onclick = () => act("rooms/" + roomId + "/sim", { action: "enter" });
+    $("leave").onclick = () => act("rooms/" + roomId + "/sim", { action: "leave" });
+    $("fast").onclick = () => act("settings", { countdownSec: 10, idleMin: 1 });
+    $("normal").onclick = () => act("settings", { countdownSec: 30, idleMin: 20 });
+    $("reset").onclick = () => act("reset", {});
   }
 
-  $("shutdown").addEventListener("click", async () => {
-    if (!confirm("Switch off everything in this room?")) return;
-    const res = await fetch("/api/rooms/" + roomId + "/shutdown", { method: "POST" });
-    render(await res.json());
-    $("msg").textContent = "Done. Everything in this room is off.";
-  });
-
-  $("reset").addEventListener("click", async () => {
-    await fetch("/api/reset", { method: "POST" });
-    $("msg").textContent = "";
-    load();
-  });
-
   load();
+  setInterval(load, 1000);
 </script>
 </body>
 </html>
